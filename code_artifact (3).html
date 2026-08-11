@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校園時空守護者：十顆元素水晶尋寶大作戰</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        treasure: {
+                            50: '#fbf8ef',
+                            100: '#f5edd3',
+                            500: '#d97706',
+                            700: '#b45309',
+                            900: '#78350f',
+                        },
+                        guardian: {
+                            blue: '#1e3a8a',
+                            purple: '#581c87',
+                            gold: '#fbbf24',
+                            emerald: '#059669'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+        }
+
+        .gold-glow {
+            box-shadow: 0 0 25px rgba(251, 191, 36, 0.35);
+        }
+
+        .badge-locked {
+            filter: grayscale(100%) opacity(0.4);
+            transform: scale(0.95);
+        }
+
+        .badge-unlocked {
+            filter: grayscale(0%) opacity(1);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); transform: scale(1); }
+            100% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.8); transform: scale(1.03); }
+        }
+
+        .parchment-text {
+            background: #fffbeb;
+            color: #451a03;
+            border: 2px solid #b45309;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased pb-12">
+
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-700 px-4 py-3 shadow-lg">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div id="teamBadge" class="bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-extrabold px-3 py-1 rounded-full text-sm flex items-center gap-1 shadow">
+                    <i class="fas fa-users"></i>
+                    <span id="displayTeamName">未選擇小組</span>
+                </div>
+                <button onclick="openTeamModal()" class="text-xs text-amber-300 underline hover:text-amber-200">切換小組</button>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleAudio()" id="audioBtn" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white" title="音效設定">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <button onclick="openTeacherAuthModal()" class="p-2 rounded-lg bg-slate-800 text-amber-400 hover:text-amber-300 text-xs flex items-center gap-1 border border-amber-500/30">
+                    <i class="fas fa-user-shield"></i>
+                    <span class="inline">教師後台</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+
+        <!-- Banner Card -->
+        <div class="glass-card rounded-2xl p-6 relative overflow-hidden border-amber-500/30">
+            <div class="absolute -right-8 -bottom-8 opacity-10 text-amber-500">
+                <i class="fas fa-compass text-9xl"></i>
+            </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-2 text-amber-400 text-sm font-semibold tracking-wider mb-1">
+                    <i class="fas fa-scroll"></i> 探險任務檔案
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 mb-2">
+                    《校園時空守護者：十顆元素水晶尋寶大作戰》
+                </h1>
+                <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-4">
+                    探險隊員們請在校園各處尋找藏寶地點，查看現場的實體題目與寶箱，輸入地點密語解開考驗並收集水晶章！完成全部 10 個考驗的小隊將獲得「終極時空守護者」榮譽！
+                </p>
+                
+                <div class="flex flex-wrap gap-3 text-xs text-slate-300">
+                    <span class="bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700 flex items-center gap-1">
+                        <i class="fas fa-map-marker-alt text-red-400"></i> 藏寶地點：10 個
+                    </span>
+                    <span class="bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700 flex items-center gap-1">
+                        <i class="fas fa-award text-amber-400"></i> 當前集章：<span id="collectedCount" class="font-bold text-amber-400 text-sm">0</span> / 10
+                    </span>
+                    <span class="bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700 flex items-center gap-1">
+                        <i class="fas fa-shield-alt text-emerald-400"></i> 守護守律：秘密行動與環境歸位
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Input Box -->
+        <div class="glass-card rounded-2xl p-6 border-2 border-amber-500/50 gold-glow">
+            <h2 class="text-lg font-bold text-amber-300 flex items-center gap-2 mb-2">
+                <i class="fas fa-key text-amber-400"></i> 解鎖藏寶點任務
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">到達現場後，請輸入你在藏寶地點找到的地點密語：</p>
+            
+            <form onsubmit="handleCodeSubmit(event)" class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="codeInput" placeholder="輸入地點密語..." 
+                        class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 text-base font-semibold">
+                </div>
+                <button type="submit" 
+                    class="px-6 py-3 bg-gradient-to-r from-amber-500 to-yellow-600 hover:from-amber-600 hover:to-yellow-700 text-slate-950 font-black rounded-xl shadow-lg transition duration-200 active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-unlock"></i> 解開考驗
+                </button>
+            </form>
+            <div id="codeFeedback" class="mt-2 text-xs font-semibold hidden"></div>
+        </div>
+
+        <!-- Stamps Grid -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-black text-slate-100 flex items-center gap-2">
+                    <i class="fas fa-stamp text-amber-400"></i> 探險集章護照
+                </h2>
+            </div>
+
+            <div id="badgeGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                <!-- JS dynamically renders badges -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Team Modal -->
+    <div id="teamModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl max-w-md w-full p-6 border-amber-500/40 relative">
+            <h2 class="text-2xl font-black text-amber-300 text-center mb-1">
+                <i class="fas fa-shield-alt text-amber-400"></i> 建立探險小隊
+            </h2>
+            <p class="text-xs text-slate-400 text-center mb-6">請選擇或輸入你們的小組名稱以開始活動</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-2">預設小組選擇：</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="selectPresetTeam('烈焰赤龍隊')" class="p-2.5 bg-red-950/50 hover:bg-red-900/60 border border-red-700/50 rounded-xl text-red-200 text-xs font-bold flex items-center justify-center gap-2">
+                            <i class="fas fa-dragon text-red-400"></i> 烈焰赤龍隊
+                        </button>
+                        <button onclick="selectPresetTeam('風暴藍鷹隊')" class="p-2.5 bg-blue-950/50 hover:bg-blue-900/60 border border-blue-700/50 rounded-xl text-blue-200 text-xs font-bold flex items-center justify-center gap-2">
+                            <i class="fas fa-crow text-blue-400"></i> 風暴藍鷹隊
+                        </button>
+                        <button onclick="selectPresetTeam('大地翡翠隊')" class="p-2.5 bg-emerald-950/50 hover:bg-emerald-900/60 border border-emerald-700/50 rounded-xl text-emerald-200 text-xs font-bold flex items-center justify-center gap-2">
+                            <i class="fas fa-leaf text-emerald-400"></i> 大地翡翠隊
+                        </button>
+                        <button onclick="selectPresetTeam('閃電金虎隊')" class="p-2.5 bg-amber-950/50 hover:bg-amber-900/60 border border-amber-700/50 rounded-xl text-amber-200 text-xs font-bold flex items-center justify-center gap-2">
+                            <i class="fas fa-bolt text-amber-400"></i> 閃電金虎隊
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative flex items-center my-2">
+                    <div class="flex-grow border-t border-slate-700"></div>
+                    <span class="flex-shrink mx-2 text-xs text-slate-500">或自訂名稱</span>
+                    <div class="flex-grow border-t border-slate-700"></div>
+                </div>
+
+                <div>
+                    <input type="text" id="customTeamInput" placeholder="輸入小組隊名..." 
+                        class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-amber-400">
+                </div>
+
+                <button onclick="confirmTeamName()" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-black rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition">
+                    進入校園時空網頁 <i class="fas fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mission Challenge Modal -->
+    <div id="missionModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto p-6 border-amber-500/50 relative">
+            <button onclick="closeMissionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl p-2 z-20">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="flex items-center gap-2 text-xs font-bold text-amber-400 mb-1">
+                <span id="modalMissionElement" class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-500/30">元素水晶</span>
+                <span>第 <span id="modalMissionNum">1</span> 關卡</span>
+            </div>
+
+            <h3 id="modalMissionTitle" class="text-xl font-black text-amber-200 mb-3">
+                關卡標題
+            </h3>
+
+            <!-- Story background -->
+            <div class="parchment-text p-4 rounded-xl text-xs sm:text-sm leading-relaxed mb-4 shadow-inner">
+                <p id="modalMissionStory">
+                    故事背景說明...
+                </p>
+            </div>
+
+            <!-- Physical item hint notice -->
+            <div class="bg-amber-950/30 border border-amber-500/30 p-3 rounded-xl mb-4 flex items-start gap-2 text-xs text-amber-200/90">
+                <i class="fas fa-hand-holding-box text-amber-400 text-base mt-0.5"></i>
+                <div>
+                    <span class="font-bold text-amber-300">現場實體觀察提示：</span>
+                    <p class="text-[11px] text-slate-300 mt-0.5">請仔細對照該藏寶地點擺放的「實體題目卡與道具」，結合下方說明進行解答。</p>
+                </div>
+            </div>
+
+            <!-- Task description -->
+            <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-700 mb-4">
+                <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <i class="fas fa-exclamation-circle"></i> 闖關要求
+                </h4>
+                <p id="modalMissionTask" class="text-sm text-slate-200 font-medium">
+                    任務描述...
+                </p>
+            </div>
+
+            <!-- Interactive Area (Input / Options / Photo upload) -->
+            <div id="missionInteractiveArea">
+                <!-- JS handles input types -->
+            </div>
+
+            <!-- Guardian Rule Notice (保密與歸位宣導) -->
+            <div class="mt-5 pt-3 border-t border-slate-800/80 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+                <div class="text-[11px] font-bold text-amber-400/90 flex items-center gap-1.5 mb-1">
+                    <i class="fas fa-user-shield text-amber-400"></i> 時空守護者兩大守律：
+                </div>
+                <ul class="text-[11px] text-slate-400 space-y-1 list-disc list-inside">
+                    <li><strong class="text-slate-300">現場復原：</strong>答題完畢後，請將寶箱與實體教具放回原處歸位。</li>
+                    <li><strong class="text-slate-300">保密原則：</strong>請勿向其他小隊透露藏寶位置與答案，維持公平體驗！</li>
+                </ul>
+            </div>
+
+            <div id="missionFeedback" class="mt-3 text-xs font-bold hidden"></div>
+        </div>
+    </div>
+
+    <!-- Teacher Auth Modal -->
+    <div id="teacherAuthModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-2xl max-w-sm w-full p-6 border-amber-500/40 relative text-center">
+            <button onclick="closeTeacherAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mx-auto mb-3 border border-amber-500/30">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h3 class="text-lg font-black text-amber-300 mb-1">驗證教師權限</h3>
+            <p class="text-xs text-slate-400 mb-4">請輸入進入教師後台的通關密語（可輸入中文）</p>
+            
+            <form onsubmit="verifyTeacherPassword(event)" class="space-y-3">
+                <input type="text" id="teacherAuthInput" placeholder="輸入通關密語" required
+                    class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-center text-sm focus:outline-none focus:border-amber-400 placeholder:text-slate-500">
+                <div id="authFeedback" class="text-xs text-red-400 font-bold hidden"></div>
+                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-black rounded-xl hover:brightness-110 transition shadow-lg text-sm">
+                    確認登入
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Teacher Dashboard Modal -->
+    <div id="teacherModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-2xl max-w-xl w-full p-6 border-slate-700 relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeTeacherModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-lg font-bold text-amber-300 mb-1 flex items-center gap-2">
+                <i class="fas fa-user-shield"></i> 教師管理後台
+            </h3>
+            <p class="text-xs text-slate-400 mb-4">老師可在此查看 10 大考驗的地點密語與正確解答，或重置學生進度。</p>
+
+            <div class="space-y-3 mb-6">
+                <div class="text-xs font-bold text-slate-300 mb-1 flex items-center justify-between">
+                    <span><i class="fas fa-list-ol text-amber-400 mr-1"></i> 10 大關卡地點密語與解答對照表：</span>
+                    <span class="text-[10px] text-slate-400">（實體卡片請擺放於藏寶點）</span>
+                </div>
+                <div id="teacherAnswerKey" class="space-y-1.5 text-xs text-slate-300 max-h-60 overflow-y-auto pr-1">
+                    <!-- JS renders key -->
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-700 flex justify-between items-center">
+                <button onclick="confirmResetProgress()" class="px-4 py-2 bg-red-600/80 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition">
+                    <i class="fas fa-trash-alt mr-1"></i> 重置本機闖關進度
+                </button>
+                <button onclick="closeTeacherModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Notice / Dialog Modal -->
+    <div id="noticeModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="glass-card rounded-2xl max-w-sm w-full p-6 border-amber-500/40 text-center relative">
+            <div id="noticeIcon" class="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mx-auto mb-3 border border-amber-500/30">
+                <i class="fas fa-star"></i>
+            </div>
+            <h3 id="noticeTitle" class="text-lg font-black text-amber-300 mb-2">通知標題</h3>
+            <p id="noticeMessage" class="text-xs text-slate-300 leading-relaxed mb-5">通知內容...</p>
+            <div id="noticeActions" class="flex justify-center gap-2">
+                <button onclick="closeNoticeModal()" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-black rounded-xl text-xs hover:brightness-110 transition shadow-lg w-full">
+                    確定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 10 個闖關任務的完整設定數據（純文字敘述與現場實體圖卡配合）
+        const MISSIONS = [
+            {
+                id: 1,
+                code: "綠色的容器",
+                element: "機敏水晶",
+                icon: "fa-fire",
+                color: "from-red-500 to-orange-500",
+                title: "考驗一：觀察照片猜物品",
+                story: "藏寶點擺著一張神秘物品特寫照片，請仔細觀察照片中的結構特徵...",
+                task: "請觀察現場照片上的文字與結構特徵提示，請問這代表的是哪一個日常物品？",
+                type: "riddle",
+                answers: ["打火機"],
+                badgeName: "機敏之印"
+            },
+            {
+                id: 2,
+                code: "正方形的密碼",
+                element: "規律水晶",
+                icon: "fa-shapes",
+                color: "from-purple-500 to-indigo-600",
+                title: "考驗二：圖形找規律",
+                story: "守護者留下一張充滿排列規律的方塊圖卡，每個圖形的對角線組合隱含著順序...",
+                task: "請觀察現場圖卡，請問依照排列規律，問號【？】處應該填入哪一個圖形？",
+                type: "options",
+                options: [
+                    { label: "選項 A：上方有對角線，下方無線條", val: "A" },
+                    { label: "選項 B：左側有對角線，右側無線條", val: "B" },
+                    { label: "選項 C：全空白方塊", val: "C" },
+                    { label: "選項 D：斜線為 (↙) 左下至右上", val: "D" },
+                    { label: "選項 E：斜線為 (↘) 左上至右下", val: "E" }
+                ],
+                answers: ["E", "e", "選項E", "選項 E"],
+                badgeName: "規律之印"
+            },
+            {
+                id: 3,
+                code: "風暴的符號",
+                element: "疾風水晶",
+                icon: "fa-wind",
+                color: "from-cyan-500 to-blue-500",
+                title: "考驗三：文字拆解圖",
+                story: "風之靈將文字符號重疊拆解在一起，隱藏著一件能吹拂強風的道具名稱...",
+                task: "請觀察現場重疊的文字拆解圖，猜一個日常用品名稱？",
+                type: "riddle",
+                answers: ["吹風機"],
+                badgeName: "疾風之印"
+            },
+            {
+                id: 4,
+                code: "18根火柴",
+                element: "數理水晶",
+                icon: "fa-calculator",
+                color: "from-amber-500 to-yellow-600",
+                title: "考驗四：火柴移位最大數",
+                story: "古老的算術圖卡上，用 18 根火柴擺出了數字 508...",
+                task: "請參考現場圖卡，原有 18 根牙籤組成數字 508，請移動兩根變成最大的數字（提示：為 5 位數）",
+                type: "riddle",
+                answers: ["81151"],
+                badgeName: "數理之印"
+            },
+            {
+                id: 5,
+                code: "五彩的圓陣",
+                element: "色彩水晶",
+                icon: "fa-palette",
+                color: "from-emerald-500 to-teal-600",
+                title: "考驗五：5x5圓圈顏色規律",
+                story: "魔法陣圖卡上有 5x5 排列的紅、藍、綠三色圓圈，每個圓圈按某種規律變化...",
+                task: "請觀察現場圖卡，依照色彩遞變規律，問號【？】處應該填入什麼顏色？",
+                type: "options",
+                options: [
+                    { label: "A: 藍色", val: "A" },
+                    { label: "B: 綠色", val: "B" },
+                    { label: "C: 紅色", val: "C" }
+                ],
+                answers: ["A", "a", "藍色", "藍", "A:藍色"],
+                badgeName: "色彩之印"
+            },
+            {
+                id: 6,
+                code: "交錯的竹箸",
+                element: "智慧水晶",
+                icon: "fa-lightbulb",
+                color: "from-pink-500 to-rose-600",
+                title: "考驗六：八支筷子幾何接觸",
+                story: "智慧老者留下一道擺設題目：「這裡有八支筷子...」",
+                task: "請用現場的八支筷子進行排列，讓每支筷子都碰觸到至少五支筷子！完成後請【拍照上傳】驗證！",
+                type: "photo",
+                badgeName: "智慧之印"
+            },
+            {
+                id: 7,
+                code: "破碎的撲克牌",
+                element: "幻象水晶",
+                icon: "fa-clone",
+                color: "from-violet-600 to-purple-800",
+                title: "考驗七：撲克牌碎片拼圖",
+                story: "圖卡中顯示拿出黑桃6~黑桃10，各剪成6塊並混亂重拼...",
+                task: "觀察現場圖片碎片，已知碎片可重新拼成完整的三張撲克牌，哪一張【不能】被完整拼出？",
+                type: "options",
+                options: [
+                    { label: "A: 黑桃 6", val: "A" },
+                    { label: "B: 黑桃 8", val: "B" },
+                    { label: "C: 黑桃 9", val: "C" },
+                    { label: "D: 黑桃 10", val: "D" }
+                ],
+                answers: ["D", "d", "黑桃10", "黑桃十", "D:黑桃10", "10"],
+                badgeName: "幻象之印"
+            },
+            {
+                id: 8,
+                code: "躍動的瞬間",
+                element: "躍動水晶",
+                icon: "fa-child-reaching",
+                color: "from-blue-500 to-cyan-500",
+                title: "考驗八：躍動跳拍合照",
+                story: "展現擺脫地面束縛的活力，躍動水晶才會發出燦爛的光芒！",
+                task: "請小組全體成員一起拍下一張【全員同時跳躍在空中（跳拍）】的精彩照片並上傳！",
+                type: "photo",
+                badgeName: "躍動之印"
+            },
+            {
+                id: 9,
+                code: "自然的月曆",
+                element: "自然水晶",
+                icon: "fa-calendar-day",
+                color: "from-emerald-500 to-green-600",
+                title: "考驗九：大自然擺日期",
+                story: "大地記錄著時間的軌跡，請運用自然的餽贈排出印記。",
+                task: "請利用周圍大自然的資源（如樹枝、落葉、石頭等），在地面【擺出今天的日期】並拍照上傳！",
+                type: "photo",
+                badgeName: "大地之印"
+            },
+            {
+                id: 10,
+                code: "夜空的微光",
+                element: "星光水晶",
+                icon: "fa-star",
+                color: "from-amber-400 to-yellow-500",
+                title: "考驗十：創意星星合照",
+                story: "浩瀚星空散發著智慧的光輝，請小組集思廣益呈現星星的模樣。",
+                task: "請發揮創意【排出一張含有星星的照片】（例如手勢拼星、樹枝拼星形、影子等）並上傳！",
+                type: "photo",
+                badgeName: "星芒之印"
+            }
+        ];
+
+        let state = {
+            teamName: localStorage.getItem('treasure_team') || '',
+            completedMissions: JSON.parse(localStorage.getItem('treasure_completed') || '[]'),
+            photos: JSON.parse(localStorage.getItem('treasure_photos') || '{}'),
+            audioEnabled: true,
+            currentActiveMission: null
+        };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            if (!state.audioEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'success') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'fanfare') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.value = freq;
+                        g.gain.setValueAtTime(0.2, audioCtx.currentTime + idx * 0.1);
+                        g.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.1 + 0.25);
+                        o.start(audioCtx.currentTime + idx * 0.1);
+                        o.stop(audioCtx.currentTime + idx * 0.1 + 0.25);
+                    });
+                } else if (type === 'error') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        window.onload = function() {
+            initUI();
+            renderBadges();
+            renderTeacherKey();
+
+            if (!state.teamName) {
+                openTeamModal();
+            } else {
+                const teamEl = document.getElementById('displayTeamName');
+                if (teamEl) teamEl.innerText = state.teamName;
+            }
+        };
+
+        function initUI() {
+            const countEl = document.getElementById('collectedCount');
+            if (countEl) countEl.innerText = state.completedMissions.length;
+        }
+
+        function openTeamModal() {
+            document.getElementById('teamModal').classList.remove('hidden');
+        }
+
+        function selectPresetTeam(name) {
+            document.getElementById('customTeamInput').value = name;
+        }
+
+        function confirmTeamName() {
+            const input = document.getElementById('customTeamInput').value.trim();
+            if (!input) {
+                showNotice('請選擇隊名', '請選擇或輸入您的小組隊名以開啟闖關之旅！');
+                return;
+            }
+            state.teamName = input;
+            localStorage.setItem('treasure_team', input);
+            const teamEl = document.getElementById('displayTeamName');
+            if (teamEl) teamEl.innerText = input;
+            document.getElementById('teamModal').classList.add('hidden');
+            playSound('success');
+        }
+
+        function renderBadges() {
+            const grid = document.getElementById('badgeGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            MISSIONS.forEach(mission => {
+                const isCompleted = state.completedMissions.includes(mission.id);
+                const card = document.createElement('div');
+                card.className = `glass-card p-3 rounded-xl border flex flex-col items-center justify-between text-center transition-all duration-300 relative ${
+                    isCompleted ? 'border-amber-400/80 bg-amber-950/20 badge-unlocked' : 'border-slate-800 badge-locked'
+                }`;
+
+                card.innerHTML = `
+                    <div class="absolute top-2 right-2 text-[10px] font-bold px-1.5 py-0.5 rounded ${isCompleted ? 'bg-amber-500 text-slate-950' : 'bg-slate-800 text-slate-400'}">
+                        ${isCompleted ? '已解鎖' : '#' + mission.id}
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr ${mission.color} flex items-center justify-center text-white text-xl my-2 shadow-lg">
+                        <i class="fas ${mission.icon}"></i>
+                    </div>
+                    <div class="text-xs font-bold text-slate-200 mb-1">${mission.element}</div>
+                    <div class="text-[10px] text-amber-300/80 font-medium">${isCompleted ? mission.badgeName : '未解鎖'}</div>
+                `;
+                grid.appendChild(card);
+            });
+
+            const countEl = document.getElementById('collectedCount');
+            if (countEl) countEl.innerText = state.completedMissions.length;
+        }
+
+        function handleCodeSubmit(e) {
+            e.preventDefault();
+            const inputEl = document.getElementById('codeInput');
+            const feedbackEl = document.getElementById('codeFeedback');
+            const code = inputEl.value.trim();
+
+            if (!code) return;
+
+            // 比對地點密語
+            const foundMission = MISSIONS.find(m => m.code === code);
+
+            if (foundMission) {
+                feedbackEl.className = "mt-2 text-xs font-semibold text-emerald-400 flex items-center gap-1";
+                feedbackEl.innerHTML = `<i class="fas fa-check-circle"></i> 定位藏寶點成功！開啟【${foundMission.title}】...`;
+                feedbackEl.classList.remove('hidden');
+                playSound('success');
+
+                setTimeout(() => {
+                    inputEl.value = '';
+                    feedbackEl.classList.add('hidden');
+                    openMissionModal(foundMission);
+                }, 500);
+            } else {
+                feedbackEl.className = "mt-2 text-xs font-semibold text-red-400 flex items-center gap-1";
+                feedbackEl.innerHTML = `<i class="fas fa-times-circle"></i> 地點密語不正確，請再次核對藏寶處的密語卡。`;
+                feedbackEl.classList.remove('hidden');
+                playSound('error');
+            }
+        }
+
+        /* 開啟闖關 Modal */
+        function openMissionModal(mission) {
+            state.currentActiveMission = mission;
+            
+            document.getElementById('modalMissionElement').innerText = mission.element;
+            document.getElementById('modalMissionNum').innerText = mission.id;
+            document.getElementById('modalMissionTitle').innerText = mission.title;
+            document.getElementById('modalMissionStory').innerText = mission.story;
+            document.getElementById('modalMissionTask').innerText = mission.task;
+
+            const isAlreadyCompleted = state.completedMissions.includes(mission.id);
+            const interactiveArea = document.getElementById('missionInteractiveArea');
+            const feedbackEl = document.getElementById('missionFeedback');
+            feedbackEl.classList.add('hidden');
+
+            if (isAlreadyCompleted) {
+                interactiveArea.innerHTML = `
+                    <div class="bg-emerald-950/40 border border-emerald-500/50 p-4 rounded-xl text-center">
+                        <i class="fas fa-certificate text-amber-400 text-3xl mb-2"></i>
+                        <p class="text-sm font-bold text-emerald-300">小隊已成功獲得【${mission.badgeName}】徽章！</p>
+                        <p class="text-xs text-slate-400 mt-1">此地點的水晶能量已激活歸位。</p>
+                    </div>
+                `;
+            } else if (mission.type === 'options') {
+                let optionsHtml = mission.options.map(opt => `
+                    <button type="button" onclick="selectOptionAnswer('${opt.val}')" 
+                        class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-400 rounded-xl text-left font-bold text-slate-200 text-xs sm:text-sm flex items-center justify-between transition group">
+                        <span>${opt.label}</span>
+                        <i class="fas fa-chevron-right text-slate-500 group-hover:text-amber-400"></i>
+                    </button>
+                `).join('');
+
+                interactiveArea.innerHTML = `
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-300 mb-1">請點選正確的解答選項：</label>
+                        <div class="grid grid-cols-1 gap-2">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                `;
+            } else if (mission.type === 'riddle') {
+                interactiveArea.innerHTML = `
+                    <form onsubmit="submitRiddleAnswer(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1">請輸入解答：</label>
+                            <input type="text" id="riddleAnswerInput" placeholder="填寫解答..." required
+                                class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-amber-400">
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-black rounded-xl hover:brightness-110 transition shadow-lg">
+                            提交驗證解答 <i class="fas fa-paper-plane ml-1"></i>
+                        </button>
+                    </form>
+                `;
+            } else if (mission.type === 'photo') {
+                interactiveArea.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="border-2 border-dashed border-slate-700 hover:border-amber-400/60 rounded-xl p-4 text-center cursor-pointer bg-slate-900/50 relative">
+                            <input type="file" accept="image/*" capture="environment" onchange="handlePhotoSelect(event)" 
+                                class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                            <div id="photoPreviewContainer">
+                                <i class="fas fa-camera text-2xl text-amber-400 mb-1"></i>
+                                <p class="text-xs text-slate-300 font-bold">點擊開啟相機拍照或選擇照片</p>
+                                <p class="text-[10px] text-slate-500">拍下符合考驗要求的照片</p>
+                            </div>
+                        </div>
+                        <button id="photoSubmitBtn" disabled onclick="submitPhotoTask()" 
+                            class="w-full py-3 bg-slate-800 text-slate-500 font-black rounded-xl transition shadow-lg disabled:cursor-not-allowed">
+                            上傳任務照片並領取水晶章 <i class="fas fa-check ml-1"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+            document.getElementById('missionModal').classList.remove('hidden');
+        }
+
+        function closeMissionModal() {
+            document.getElementById('missionModal').classList.add('hidden');
+        }
+
+        function selectOptionAnswer(val) {
+            checkAnswer(val);
+        }
+
+        function submitRiddleAnswer(e) {
+            e.preventDefault();
+            const input = document.getElementById('riddleAnswerInput').value.trim();
+            checkAnswer(input);
+        }
+
+        function checkAnswer(userInput) {
+            const mission = state.currentActiveMission;
+            const feedbackEl = document.getElementById('missionFeedback');
+            const cleanInput = userInput.replace(/\s+/g, '').toLowerCase();
+
+            const isCorrect = mission.answers.some(ans => {
+                const cleanAns = ans.replace(/\s+/g, '').toLowerCase();
+                return cleanInput === cleanAns || cleanInput.includes(cleanAns) || cleanAns.includes(cleanInput);
+            });
+
+            if (isCorrect) {
+                completeMission(mission);
+            } else {
+                feedbackEl.className = "mt-3 text-xs font-bold text-red-400 bg-red-950/40 p-2.5 rounded-lg border border-red-800/50 flex items-center gap-1";
+                feedbackEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> 答案不太對喔！請對照現場教具再思考看看。`;
+                feedbackEl.classList.remove('hidden');
+                playSound('error');
+            }
+        }
+
+        /* 學生上傳照片處理 */
+        let tempPhotoData = null;
+        function handlePhotoSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    tempPhotoData = evt.target.result;
+                    const container = document.getElementById('photoPreviewContainer');
+                    container.innerHTML = `
+                        <img src="${tempPhotoData}" class="max-h-40 mx-auto rounded-lg border border-amber-400 shadow mb-1">
+                        <p class="text-[10px] text-emerald-400 font-bold"><i class="fas fa-check-circle"></i> 照片已就緒，可點擊上傳！</p>
+                    `;
+                    const btn = document.getElementById('photoSubmitBtn');
+                    btn.disabled = false;
+                    btn.className = "w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-black rounded-xl hover:brightness-110 transition shadow-lg";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function submitPhotoTask() {
+            if (tempPhotoData && state.currentActiveMission) {
+                state.photos[state.currentActiveMission.id] = tempPhotoData;
+                localStorage.setItem('treasure_photos', JSON.stringify(state.photos));
+                completeMission(state.currentActiveMission);
+            }
+        }
+
+        function completeMission(mission) {
+            if (!state.completedMissions.includes(mission.id)) {
+                state.completedMissions.push(mission.id);
+                localStorage.setItem('treasure_completed', JSON.stringify(state.completedMissions));
+            }
+
+            renderBadges();
+            playSound('fanfare');
+
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            closeMissionModal();
+
+            if (state.completedMissions.length === 10) {
+                setTimeout(() => {
+                    showNotice('🏆 完美通關狂賀！', `🎉 太震撼了！【${state.teamName}】成功收集了全部 10 顆元素水晶！校園時空核心已完全修復，你們獲封為終極時空守護者！`);
+                }, 400);
+            } else {
+                setTimeout(() => {
+                    showNotice('✨ 考驗通過！', `恭喜獲得【${mission.badgeName}】！\n\n📢 守護者提醒：離去前請將現場道具與寶箱歸位，且勿透露地點與答案給其他小隊喔！`);
+                }, 300);
+            }
+        }
+
+        /* 聲音開關 */
+        function toggleAudio() {
+            state.audioEnabled = !state.audioEnabled;
+            const btn = document.getElementById('audioBtn');
+            btn.innerHTML = state.audioEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute text-red-400"></i>';
+        }
+
+        /* 教師權限驗證 (支援中文輸入) */
+        function openTeacherAuthModal() {
+            document.getElementById('teacherAuthModal').classList.remove('hidden');
+            document.getElementById('teacherAuthInput').value = '';
+            document.getElementById('authFeedback').classList.add('hidden');
+        }
+
+        function closeTeacherAuthModal() {
+            document.getElementById('teacherAuthModal').classList.add('hidden');
+        }
+
+        function verifyTeacherPassword(e) {
+            e.preventDefault();
+            const input = document.getElementById('teacherAuthInput').value.trim();
+            const feedback = document.getElementById('authFeedback');
+
+            // 預設通關密語：給我100萬 (支援中文)
+            if (input === '給我100萬') {
+                closeTeacherAuthModal();
+                openTeacherModal();
+            } else {
+                feedback.innerText = '通關密語不正確，請重新輸入！';
+                feedback.classList.remove('hidden');
+                playSound('error');
+            }
+        }
+
+        function openTeacherModal() {
+            document.getElementById('teacherModal').classList.remove('hidden');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('teacherModal').classList.add('hidden');
+        }
+
+        function renderTeacherKey() {
+            const container = document.getElementById('teacherAnswerKey');
+            if (!container) return;
+            container.innerHTML = '';
+            MISSIONS.forEach(m => {
+                const item = document.createElement('div');
+                item.className = "p-2 bg-slate-900 rounded border border-slate-800 flex justify-between items-center";
+                item.innerHTML = `
+                    <div>
+                        <span class="font-bold text-amber-400">#${m.id} ${m.element}</span>
+                    </div>
+                    <div>
+                        <span class="bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-mono font-bold">密語: ${m.code}</span>
+                        ${m.type === 'photo' ? '<span class="bg-blue-950 text-blue-300 px-2 py-0.5 rounded ml-1">照片題</span>' : `<span class="bg-slate-800 px-2 py-0.5 rounded text-amber-300 font-mono font-bold ml-1">答: ${m.answers[0]}</span>`}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        /* 自訂 Notice 彈窗 (取代原原生 alert) */
+        function showNotice(title, message) {
+            document.getElementById('noticeTitle').innerText = title;
+            document.getElementById('noticeMessage').innerText = message;
+            document.getElementById('noticeModal').classList.remove('hidden');
+        }
+
+        function closeNoticeModal() {
+            document.getElementById('noticeModal').classList.add('hidden');
+        }
+
+        /* 重置紀錄流程 */
+        function confirmResetProgress() {
+            closeTeacherModal();
+            showNotice('進度重置成功', '本機的所有闖關進度與照片紀錄已全部重置完成！');
+            localStorage.removeItem('treasure_completed');
+            localStorage.removeItem('treasure_photos');
+            state.completedMissions = [];
+            state.photos = {};
+            renderBadges();
+        }
+    </script>
+</body>
+</html>
